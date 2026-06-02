@@ -2507,7 +2507,8 @@
                                 class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 text-center space-y-2 flex flex-col justify-center items-center">
                                 <div
                                     class="w-10 h-10 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold text-xs">
-                                    <i data-lucide="graduation-cap" class="w-5 h-5"></i></div>
+                                    <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+                                </div>
                                 <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">เกรดเฉลี่ยเฉลี่ยรวม
                                     (Average GPAX)</h4>
                                 <h2 class="text-4xl font-black text-gray-900 leading-none" id="reportAvgGpax">0.00</h2>
@@ -5426,15 +5427,55 @@
                 currentRole = savedRole;
                 proceedLogin();
             }
-               });
+        });
     </script>
 
     <!-- 📌 ตัวกรอบดึงหน้าจอคำนวณเกรดมาแสดงผลในหน้าเดียวกัน -->
-    <div style="width: 100%; height: 100vh; margin-top: 20px;">
-        <iframe src="https://script.google.com/a/macros/rmutsvmail.com/s/AKfycbxNWIGlt1aLJEC01-G2K715hoyFJyHv0t0BoPOKCWdoFIimsYOvCkspZ2aFyr0tnDCtHQ/exec" 
-                style="width: 100%; height: 100%; border: none;"
-                allow="camera"></iframe>
+    <div id="gasIframeContainer" style="width: 100%; height: 100vh; margin-top: 20px;">
+        <iframe
+            src="https://script.google.com/a/macros/rmutsvmail.com/s/AKfycbxNWIGlt1aLJEC01-G2K715hoyFJyHv0t0BoPOKCWdoFIimsYOvCkspZ2aFyr0tnDCtHQ/exec"
+            style="width: 100%; height: 100%; border: none;" allow="camera"></iframe>
     </div>
 
+    <script>
+        // ตรวจสอบสถานะการรัน: อยู่ใน iframe หรืออยู่ในสภาพแวดล้อม Google Apps Script (GAS) หรือไม่
+        const isIframe = window.self !== window.top;
+        const isGAS = typeof google !== 'undefined';
+
+        if (isIframe || isGAS) {
+            // 1. ถ้าตัวแอปถูกเรียกใช้งานในฐานะ iframe (ใน GitHub Pages) หรือรันตรงๆ บน Google Apps Script
+            // ให้ทำการลบแท็ก iframe ตัวล่างสุดทิ้งไป เพื่อป้องกันการแสดงผลซ้อนกันและการวนลูปแบบไม่สิ้นสุด (Infinite Recursion)
+            const iframeContainer = document.getElementById('gasIframeContainer');
+            if (iframeContainer) {
+                iframeContainer.remove();
+            }
+        } else {
+            // 2. ถ้าเปิดไฟล์นี้ตรงๆ ผ่าน GitHub Pages (หรือเครื่องตัวเองที่เป็นหน้าหลัก)
+            // ให้ซ่อน UI ส่วนอื่นทั้งหมดของไฟล์นี้ และเปิดแสดงผลเฉพาะ iframe ของ Google Apps Script แบบเต็มจอ
+            // วิธีนี้จะทำให้หน้าเว็บ GitHub Pages ทำงานร่วมกับระบบฐานข้อมูล Google Sheets ได้ 100% ผ่าน iframe หน้าเดียวอย่างสวยงาม
+            document.querySelectorAll('body > *:not(#gasIframeContainer)').forEach(el => {
+                if (el.id !== 'loadingOverlay') {
+                    el.style.display = 'none';
+                }
+            });
+
+            // ปรับแต่งหน้าหลักให้ iframe แสดงผลแบบ Fullscreen
+            document.body.style.padding = '0';
+            document.body.style.margin = '0';
+            document.body.style.overflow = 'hidden';
+
+            const iframeContainer = document.getElementById('gasIframeContainer');
+            if (iframeContainer) {
+                iframeContainer.style.marginTop = '0';
+                iframeContainer.style.width = '100vw';
+                iframeContainer.style.height = '100vh';
+                iframeContainer.style.position = 'fixed';
+                iframeContainer.style.top = '0';
+                iframeContainer.style.left = '0';
+                iframeContainer.style.zIndex = '99999';
+            }
+        }
+    </script>
 </body>
+
 </html>
